@@ -664,7 +664,7 @@ namespace AnimeStudio
                                 {
                                     NetEaseUtils.DecryptWithHeader(compressedBytesSpan);
                                 }
-                                if ((Game.Type.IsArknightsEndfieldCB1() || Game.Type.IsArknightsEndfieldCB2()) && i == 0 && compressedBytesSpan[..32].Count((byte)0xa6) > 5)
+                                if ((Game.Type.IsArknightsEndfieldCB1() || Game.Type.IsArknightsEndfieldCB2() || Game.Type.IsInutan()) && i == 0 && compressedBytesSpan[..32].Count((byte)0xa6) > 5)
                                 {
                                     FairGuardUtils.Decrypt(compressedBytesSpan, Game.Type);
                                 }
@@ -694,7 +694,7 @@ namespace AnimeStudio
                             }
                             break;
                         }
-                    case CompressionType.Lz4Inv when Game.Type.IsArknightsEndfieldCB2():
+                    case CompressionType.Lz4Inv when Game.Type.IsArknightsEndfieldCB2()|| Game.Type.IsInutan():
                         {
                             var compressedSize = (int)blockInfo.compressedSize;
                             var uncompressedSize = (int)blockInfo.uncompressedSize;

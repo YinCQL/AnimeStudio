@@ -65,7 +65,7 @@ namespace AnimeStudio
                 seedPart3 = (uint)(encryptedInts[0] ^ encryptedInts[7] ^ CB2Constants.SEED_PART3_XOR);
                 seedPart4 = (uint)(encryptedInts[4] ^ encryptedInts[7] ^ CB2Constants.SEED_PART4_XOR);
             }
-            else if (gameType.IsArknightsEndfieldCB1())
+            else if (gameType.IsArknightsEndfieldCB1()|| gameType.IsInutan())
             {
                 seedPart0 = (uint)(encryptedInts[2] ^ encryptedInts[6] ^ CB1Constants.SEED_PART0_XOR);
                 seedPart1 = (uint)(encryptedInts[3] ^ encryptedInts[0] ^ CB1Constants.SEED_PART1_XOR ^ encryptedSize);

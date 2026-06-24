@@ -59,6 +59,7 @@ namespace AnimeStudio
             Games.Add(index++, new Game(GameType.CodenameJump, "Codename Jump"));
             Games.Add(index++, new Game(GameType.GirlsFrontline, "Girls Frontline"));
             Games.Add(index++, new Game(GameType.Reverse1999, "Reverse: 1999"));
+            Games.Add(index++, new Game(GameType.Inutan, "Inutan"));
             Games.Add(index++, new Game(GameType.ArknightsEndfield, "Arknights Endfield"));
             Games.Add(index++, new Game(GameType.ArknightsEndfieldCB3, "Arknights Endfield CBT3"));
             Games.Add(index++, new Game(GameType.ArknightsEndfieldCB2, "Arknights Endfield CBT2"));
@@ -224,6 +225,7 @@ namespace AnimeStudio
         CodenameJump,
         GirlsFrontline,
         Reverse1999,
+        Inutan,
         ArknightsEndfield,
         ArknightsEndfieldCB3,
         ArknightsEndfieldCB2,
@@ -297,6 +299,7 @@ namespace AnimeStudio
         public static bool IsNaraka(this GameType type) => type == GameType.Naraka;
         public static bool IsOPFP(this GameType type) => type == GameType.OPFP;
         public static bool IsNetEase(this GameType type) => type == GameType.NetEase;
+        public static bool IsInutan(this GameType type) => type == GameType.Inutan;
         public static bool IsArknightsEndfield(this GameType type) => type == GameType.ArknightsEndfield;
         public static bool IsArknightsEndfieldCB3(this GameType type) => type == GameType.ArknightsEndfieldCB3;
         public static bool IsArknightsEndfieldCB2(this GameType type) => type == GameType.ArknightsEndfieldCB2;
