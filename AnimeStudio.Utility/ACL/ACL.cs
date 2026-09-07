@@ -13,45 +13,12 @@ namespace ACLLibs
     }
     public static class ACL
     {
-        private const string DLL_NAME = "acl";
+        private const string DLL_NAME = "AnimeStudio.ACL.MHY";
         static ACL()
         {
             DllLoader.PreloadDll(DLL_NAME);
         }
-        public static void DecompressAll(byte[] data, out float[] values, out float[] times)
-        {
-            var decompressedClip = new DecompressedClip();
-            DecompressAll(data, ref decompressedClip);
-
-            values = new float[decompressedClip.ValuesCount];
-            Marshal.Copy(decompressedClip.Values, values, 0, decompressedClip.ValuesCount);
-
-            times = new float[decompressedClip.TimesCount];
-            Marshal.Copy(decompressedClip.Times, times, 0, decompressedClip.TimesCount);
-
-            Dispose(ref decompressedClip);
-        }
-
-        #region importfunctions
-
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void DecompressAll(byte[] data, ref DecompressedClip decompressedClip);
-
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        private static extern void Dispose(ref DecompressedClip decompressedClip);
-
-        #endregion
-    }
-
-    public static class SRACL
-    {
-        private const string DLL_NAME = "AnimeStudio.ACL.SR";
-        static SRACL()
-        {
-            // x64 only, so it lives in the application directory rather than in x86/x64.
-            DllLoader.PreloadDll(DLL_NAME, archSpecific: false);
-        }
-        public static void DecompressAll(byte[] data, out float[] values, out float[] times)
+        public static void DecompressClip(byte[] data, out float[] values, out float[] times)
         {
             var decompressedClip = new DecompressedClip();
             DecompressClip(data, ref decompressedClip);
@@ -67,9 +34,53 @@ namespace ACLLibs
 
         #region importfunctions
 
-        // This one is the acl 1.x uniformly-sampled decoder; its export is named DecompressClip.
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern void DecompressClip(byte[] data, ref DecompressedClip decompressedClip);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Dispose(ref DecompressedClip decompressedClip);
+
+        #endregion
+    }
+
+    public static class SRACL
+    {
+        private const string DLL_NAME = "AnimeStudio.ACL.SR";
+        static SRACL()
+        {
+            // x64 only, so it lives in the application directory rather than in x86/x64.
+            DllLoader.PreloadDll(DLL_NAME, archSpecific: false);
+        }
+        public static void DecompressClip(byte[] data, out float[] values, out float[] times)
+        {
+            int alignment = 16;
+            IntPtr raw = Marshal.AllocHGlobal(data.Length + alignment);
+            IntPtr aligned = new IntPtr((raw.ToInt64() + alignment - 1) & ~(alignment - 1));
+            var decompressedClip = new DecompressedClip();
+
+            try
+            {
+                Marshal.Copy(data, 0, aligned, data.Length);
+                DecompressClip(aligned, ref decompressedClip);
+            } finally
+            {
+                Marshal.FreeHGlobal(raw);
+            }
+
+            values = new float[decompressedClip.ValuesCount];
+            Marshal.Copy(decompressedClip.Values, values, 0, decompressedClip.ValuesCount);
+
+            times = new float[decompressedClip.TimesCount];
+            Marshal.Copy(decompressedClip.Times, times, 0, decompressedClip.TimesCount);
+
+            Dispose(ref decompressedClip);
+        }
+
+        #region importfunctions
+
+        // This one is the acl 1.x uniformly-sampled decoder; its export is named DecompressClip.
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        private static extern void DecompressClip(nint data, ref DecompressedClip decompressedClip);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         private static extern void Dispose(ref DecompressedClip decompressedClip);
@@ -81,11 +92,49 @@ namespace ACLLibs
     {
         private const string DLL_NAME = "AnimeStudio.ACL.DB";
         private const string DLL_NAME_ZZZ = "AnimeStudio.ACL.ZZZ";
+        private const string DLL_NAME_ZZZ_V2 = "AnimeStudio.ACL.ZZZV2";
         static DBACL()
         {
             // x64 only, so they live in the application directory rather than in x86/x64.
             DllLoader.PreloadDll(DLL_NAME, archSpecific: false);
             DllLoader.PreloadDll(DLL_NAME_ZZZ, archSpecific: false);
+        }
+        private static IntPtr AlignAndCopyData(byte[] data, out IntPtr base_ptr)
+        {
+            base_ptr = IntPtr.Zero;
+            if (data == null)
+            {
+                return IntPtr.Zero;
+            }
+            base_ptr = Marshal.AllocHGlobal(data.Length + 8);
+            var dataAligned = new IntPtr(16 * (((long)base_ptr + 15) / 16));
+            Marshal.Copy(data, 0, dataAligned, data.Length);
+            return dataAligned;
+        }
+
+        public static void DecompressTracksV2(byte[] transform_data, byte[] scalar_data, byte[] db, byte[] db_bulk_data, out float[] values, out float[] times)
+        {
+            var decompressedClip = new DecompressedClip();
+
+            var transform_data_ptr = AlignAndCopyData(transform_data, out var transform_data_base_ptr);
+            var scalar_data_ptr = AlignAndCopyData(scalar_data, out var scalar_data_base_ptr);
+            var db_ptr = AlignAndCopyData(db, out var db_base_ptr);
+            var db_bulk_data_ptr = AlignAndCopyData(db_bulk_data, out var db_bulk_data_base_ptr);
+
+            DecompressTracksZZZV2(transform_data_ptr, scalar_data_ptr, db_ptr, db_bulk_data_ptr, ref decompressedClip);
+
+            Marshal.FreeHGlobal(transform_data_base_ptr);
+            Marshal.FreeHGlobal(scalar_data_base_ptr);
+            Marshal.FreeHGlobal(db_base_ptr);
+            Marshal.FreeHGlobal(db_bulk_data_base_ptr);
+
+            values = new float[decompressedClip.ValuesCount];
+            Marshal.Copy(decompressedClip.Values, values, 0, decompressedClip.ValuesCount);
+
+            times = new float[decompressedClip.TimesCount];
+            Marshal.Copy(decompressedClip.Times, times, 0, decompressedClip.TimesCount);
+
+            DisposeZZZV2(ref decompressedClip);
         }
         public static void DecompressTracks(byte[] data, byte[] db, out float[] values, out float[] times, bool isZZZ = false)
         {
@@ -144,6 +193,11 @@ namespace ACLLibs
 
         [DllImport(DLL_NAME_ZZZ, CallingConvention = CallingConvention.Cdecl, EntryPoint = "Dispose")]
         private static extern void DisposeZZZ(ref DecompressedClip decompressedClip);
+
+        [DllImport(DLL_NAME_ZZZ_V2, CallingConvention = CallingConvention.Cdecl, EntryPoint = "DecompressTracksZZZ")]
+        private static extern void DecompressTracksZZZV2(nint transform_tracks, nint scalar_tracks, nint database, nint bulk_data, ref DecompressedClip decompressedClip);
+        [DllImport(DLL_NAME_ZZZ, CallingConvention = CallingConvention.Cdecl, EntryPoint = "Dispose")]
+        private static extern void DisposeZZZV2(ref DecompressedClip decompressedClip);
 
         #endregion
     }

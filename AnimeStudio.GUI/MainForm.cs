@@ -271,7 +271,16 @@ namespace AnimeStudio.GUI
                 Studio.Game = GameManager.GetGame(Properties.Settings.Default.selectedGame);
             }
 
-            TypeFlags.SetTypes(JsonConvert.DeserializeObject<Dictionary<ClassIDType, (bool, bool)>>(Properties.Settings.Default.types));
+            try
+            {
+                TypeFlags.SetTypes(JsonConvert.DeserializeObject<Dictionary<ClassIDType, (bool, bool)>>(Properties.Settings.Default.types));
+            } catch (Newtonsoft.Json.JsonSerializationException)
+            {
+                // Fixes an issue where the application won't load if invalid settings from another version of Studio were previously saved.
+                Properties.Settings.Default.Reset();
+                TypeFlags.SetTypes(JsonConvert.DeserializeObject<Dictionary<ClassIDType, (bool, bool)>>(Properties.Settings.Default.types));
+            }
+            
             Logger.Info($"Target Game is {Studio.Game.Type}");
 
             if (Studio.Game.IsUnityCN())
@@ -2351,6 +2360,22 @@ namespace AnimeStudio.GUI
         {
             Properties.Settings.Default.enableModelPreview = enableModelPreview.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        public void updateGame(Game game)
+        {
+            int index = GameManager.GetGameIndex(game);
+            Properties.Settings.Default.selectedGame = index;
+            Properties.Settings.Default.Save();
+            ResetForm();
+            Studio.Game = game;
+            Logger.Info($"Target Game is {Studio.Game.Name}");
+            if (Studio.Game.IsUnityCN() && Studio.Game is UnityCNGame unityCnGame)
+            {
+                UnityCNManager.SetKey(unityCnGame.Key);
+            }
+            assetsManager.SpecifyUnityVersion = specifyUnityVersion.Text;
+            assetsManager.Game = Studio.Game;
         }
 
         public void updateGame(GameType mapGame)

@@ -41,24 +41,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ContentWithTargetPath Include="..\AnimeStudio.Libraries\x86\fmod.dll">
+		<ContentWithTargetPath Include="..\AnimeStudio.Libraries\AnimeStudio.FMOD.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>x86\fmod.dll</TargetPath>
-		</ContentWithTargetPath>
-		<ContentWithTargetPath Include="..\AnimeStudio.Libraries\x64\fmod.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>x64\fmod.dll</TargetPath>
-		</ContentWithTargetPath>
-	</ItemGroup>
-
-	<ItemGroup>
-		<ContentWithTargetPath Include="..\AnimeStudio.Libraries\x86\acl.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>x86\acl.dll</TargetPath>
-		</ContentWithTargetPath>
-		<ContentWithTargetPath Include="..\AnimeStudio.Libraries\x64\acl.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>x64\acl.dll</TargetPath>
+			<TargetPath>AnimeStudio.FMOD.dll</TargetPath>
 		</ContentWithTargetPath>
 	</ItemGroup>
 
@@ -66,7 +51,6 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="OpenTK" Version="4.9.4" />
 		<PackageReference Include="OpenTK.GLControl" Version="4.0.2" />
-		<PackageReference Include="System.Drawing.Common" Version="10.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
